@@ -1,0 +1,7 @@
+[project]
+name = "poly-micro-backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["fastapi", "uvicorn", "motor"]  # Updated to include motor
