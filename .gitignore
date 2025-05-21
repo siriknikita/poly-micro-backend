@@ -172,6 +172,3 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
-development-planning.md
-data-samples
