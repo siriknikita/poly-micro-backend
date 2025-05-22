@@ -24,6 +24,8 @@ class ProjectService:
     async def create_project(self, project: ProjectCreate) -> Project:
         """Create a new project"""
         project_data = await self.project_repository.create_project(project)
+        if not project_data:
+            raise HTTPException(status_code=404, detail="Failed to create project")
         return Project(**project_data)
     
     async def update_project(self, project_id: str, project: ProjectUpdate) -> Project:

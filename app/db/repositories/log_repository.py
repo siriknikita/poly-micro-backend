@@ -26,7 +26,7 @@ class LogRepository(BaseRepository):
     async def create_log(self, log: LogCreate) -> Dict[str, Any]:
         """Create a new log entry with auto-generated ID and timestamp"""
         # Generate log data with timestamp if not provided
-        log_dict = log.dict()
+        log_dict = log.model_dump()
         if not log_dict.get("timestamp"):
             log_dict["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
@@ -50,7 +50,7 @@ class LogRepository(BaseRepository):
     async def update_log(self, log_id: str, log: LogUpdate) -> Optional[Dict[str, Any]]:
         """Update a log entry"""
         # Only update provided fields
-        update_data = {k: v for k, v in log.dict().items() if v is not None}
+        update_data = {k: v for k, v in log.model_dump().items() if v is not None}
         if not update_data:
             return await self.find_one(log_id)  # Return current log if no updates
         

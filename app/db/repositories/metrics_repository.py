@@ -45,7 +45,7 @@ class MetricsRepository(BaseRepository):
     
     async def create_cpu_entry(self, cpu_entry: CPUEntryCreate) -> Dict[str, Any]:
         """Create a new CPU metrics entry"""
-        cpu_entry_dict = cpu_entry.dict()
+        cpu_entry_dict = cpu_entry.model_dump()
         result = await self.collection.insert_one(cpu_entry_dict)
         
         # Add ID to the response
@@ -55,7 +55,7 @@ class MetricsRepository(BaseRepository):
     async def update_cpu_entry(self, cpu_entry_id: str, cpu_entry: CPUEntryUpdate) -> Optional[Dict[str, Any]]:
         """Update a CPU metrics entry"""
         # Only update provided fields
-        update_data = {k: v for k, v in cpu_entry.dict().items() if v is not None}
+        update_data = {k: v for k, v in cpu_entry.model_dump().items() if v is not None}
         if not update_data:
             return await self.get_cpu_entry_by_id(cpu_entry_id)  # Return current entry if no updates
         
@@ -73,7 +73,7 @@ class MetricsRepository(BaseRepository):
     async def add_cpu_data_point(self, cpu_entry_id: str, cpu_data: CPUDataCreate) -> Optional[Dict[str, Any]]:
         """Add a new data point to an existing CPU metrics entry"""
         # Add the new data point
-        new_data_point = cpu_data.dict()
+        new_data_point = cpu_data.model_dump()
         
         try:
             await self.collection.update_one(

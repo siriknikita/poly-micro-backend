@@ -36,7 +36,7 @@ class ServiceRepository(BaseRepository):
     
     async def create_service(self, service: ServiceCreate) -> Dict[str, Any]:
         """Create a new service"""
-        service_data = service.dict()
+        service_data = service.model_dump()
         result = await self.collection.insert_one(service_data)
         
         # Add ID to the response
@@ -46,7 +46,7 @@ class ServiceRepository(BaseRepository):
     async def update_service(self, service_id: str, service: ServiceUpdate) -> Optional[Dict[str, Any]]:
         """Update a service"""
         # Only update provided fields
-        update_data = {k: v for k, v in service.dict().items() if v is not None}
+        update_data = {k: v for k, v in service.model_dump().items() if v is not None}
         if not update_data:
             return await self.get_service_by_id(service_id)  # Return current service if no updates
         
@@ -63,5 +63,7 @@ class ServiceRepository(BaseRepository):
     
     async def check_service_exists(self, project_id: str, service_name: str) -> bool:
         """Check if a service exists for the given project"""
+        print("Checking service exists for project", project_id, "and service", service_name)
+        print('All services', await self.get_services_by_project(project_id))
         service = await self.collection.find_one({"project_id": project_id, "name": service_name})
         return service is not None

@@ -22,23 +22,23 @@
 
 ## State 4
 
-- [ ] Implement basic CRUD operations for the models (Logs, Projects, Metrics, Users, Service, etc.)
-    - [ ] Implement the Creation operation
+- [x] Implement basic CRUD operations for the models (Logs, Projects, Metrics, Users, Service, etc.)
+    - [x] Implement the Creation operation
     - [x] Implement the Reading operation
-    - [ ] Implement the Updating operation
-    - [ ] Implement the Deleting operation
-- [ ] Test that we can query the database from the Backend
+    - [x] Implement the Updating operation
+    - [x] Implement the Deleting operation
+- [x] Test that we can query the database from the Backend
 
 ## State 5
 
-- [ ] Connect the Swagger to the Backend
-- [ ] Create a robust documentation for each of the endpoints
-- [ ] Test the queries from the Swagger UI
+- [x] Connect the Swagger to the Backend
+- [x] Create a robust documentation for each of the endpoints
+- [x] Test the queries from the Swagger UI
 
 ## State 6
 
-- [ ] Implement the in-memory testing database with the same structure as the production database
-- [ ] Test the implementation of the API using the Integration tests and Unit tests
+- [x] Implement the in-memory testing database with the same structure as the production database
+- [x] Test the implementation of the API using the Integration tests and Unit tests
 
 ## State 7
 

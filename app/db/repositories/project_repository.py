@@ -31,7 +31,7 @@ class ProjectRepository(BaseRepository):
         
         # Create new project with incremented ID
         new_id = str(max_id + 1)
-        project_data = project.dict()
+        project_data = project.model_dump()
         project_data["id"] = new_id
         
         return await self.create(project_data)
@@ -39,7 +39,7 @@ class ProjectRepository(BaseRepository):
     async def update_project(self, project_id: str, project: ProjectUpdate) -> Optional[Dict[str, Any]]:
         """Update a project"""
         # Only update provided fields
-        update_data = {k: v for k, v in project.dict().items() if v is not None}
+        update_data = {k: v for k, v in project.model_dump().items() if v is not None}
         if not update_data:
             return await self.find_one(project_id)  # Return current project if no updates
         

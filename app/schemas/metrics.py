@@ -36,4 +36,4 @@ class CPUEntry(CPUEntryBase):
     id: Optional[str] = None
     
     class Config:
-        orm_mode = True  # pydantic v1 equivalent of populate_by_name
+        from_attributes = True  # pydantic v1 equivalent of populate_by_name

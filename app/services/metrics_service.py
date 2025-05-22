@@ -61,6 +61,9 @@ class MetricsService:
         
         # Create CPU metrics entry
         cpu_entry_data = await self.metrics_repository.create_cpu_entry(cpu_entry)
+        if not cpu_entry_data:
+            raise HTTPException(status_code=404, detail="Failed to create CPU metrics entry")
+
         return CPUEntry(**cpu_entry_data)
     
     async def update_cpu_entry(self, cpu_entry_id: str, cpu_entry: CPUEntryUpdate) -> CPUEntry:
