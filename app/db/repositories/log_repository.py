@@ -1,7 +1,8 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 from .base_repository import BaseRepository
 from app.schemas.log import LogCreate, LogUpdate, Severity
+from app.models.log import LogEntry
 
 class LogRepository(BaseRepository):
     """Repository for log-related database operations"""
@@ -9,13 +10,27 @@ class LogRepository(BaseRepository):
     def __init__(self, db):
         super().__init__(db, "logs")
     
-    async def get_all_logs(self, service: Optional[str] = None, severity: Optional[Severity] = None) -> List[Dict[str, Any]]:
+    async def get_all_logs(self, project_id: Optional[str] = None, service_id: Optional[str] = None, severity: Optional[Severity] = None, test_id: Optional[str] = None, func_id: Optional[str] = None, source: Optional[str] = None) -> List[Dict[str, Any]]:
         """Get all logs with optional filtering"""
+        print("project_id:", project_id)
+        print("service_id:", service_id)
+        print("severity:", severity)
+        print("test_id:", test_id)
+        print("func_id:", func_id)
+        print("source:", source)
         filter_query = {}
-        if service:
-            filter_query["service"] = service
+        if project_id:
+            filter_query["project_id"] = project_id
+        if service_id:
+            filter_query["service_id"] = service_id
         if severity:
-            filter_query["severity"] = severity.value
+            filter_query["severity"] = severity
+        if test_id:
+            filter_query["test_id"] = test_id
+        if func_id:
+            filter_query["func_id"] = func_id
+        if source:
+            filter_query["source"] = source
             
         return await self.find_all(filter_query)
     
@@ -23,10 +38,14 @@ class LogRepository(BaseRepository):
         """Get a log by ID"""
         return await self.find_one(log_id)
     
-    async def create_log(self, log: LogCreate) -> Dict[str, Any]:
+    async def create_log(self, log: Union[LogCreate, LogEntry]) -> Dict[str, Any]:
         """Create a new log entry with auto-generated ID and timestamp"""
         # Generate log data with timestamp if not provided
-        log_dict = log.model_dump()
+        if isinstance(log, LogEntry):
+            log_dict = log.to_dict()
+        else:
+            log_dict = log.model_dump()
+            
         if not log_dict.get("timestamp"):
             log_dict["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
@@ -47,10 +66,14 @@ class LogRepository(BaseRepository):
         
         return await self.create(log_dict)
     
-    async def update_log(self, log_id: str, log: LogUpdate) -> Optional[Dict[str, Any]]:
+    async def update_log(self, log_id: str, log: Union[LogUpdate, LogEntry]) -> Optional[Dict[str, Any]]:
         """Update a log entry"""
         # Only update provided fields
-        update_data = {k: v for k, v in log.model_dump().items() if v is not None}
+        if isinstance(log, LogEntry):
+            update_data = log.to_dict()
+        else:
+            update_data = {k: v for k, v in log.model_dump().items() if v is not None}
+            
         if not update_data:
             return await self.find_one(log_id)  # Return current log if no updates
         
@@ -59,3 +82,11 @@ class LogRepository(BaseRepository):
     async def delete_log(self, log_id: str) -> bool:
         """Delete a log entry"""
         return await self.delete(log_id)
+        
+    async def get_logs_by_project(self, project_id: str) -> List[Dict[str, Any]]:
+        """Get all logs for a specific project"""
+        return await self.find_all({"project_id": project_id})
+        
+    async def get_logs_by_service(self, service_id: str) -> List[Dict[str, Any]]:
+        """Get all logs for a specific service"""
+        return await self.find_all({"service_id": service_id})

@@ -4,10 +4,12 @@ from app.db.repositories.project_repository import ProjectRepository
 from app.db.repositories.service_repository import ServiceRepository
 from app.db.repositories.log_repository import LogRepository
 from app.db.repositories.metrics_repository import MetricsRepository
+from app.db.repositories.logs_collection_repository import LogsCollectionRepository
 from app.services.project_service import ProjectService
 from app.services.service_service import ServiceService
 from app.services.log_service import LogService
 from app.services.metrics_service import MetricsService
+from app.services.service_logs_service import ServiceLogsService
 
 # Repository dependencies
 def get_project_repository():
@@ -21,6 +23,9 @@ def get_log_repository():
 
 def get_metrics_repository():
     return MetricsRepository(get_database())
+
+def get_logs_collection_repository():
+    return LogsCollectionRepository(get_database())
 
 # Service dependencies
 def get_project_service(
@@ -45,3 +50,8 @@ def get_metrics_service(
     service_repository: ServiceRepository = Depends(get_service_repository)
 ) -> MetricsService:
     return MetricsService(metrics_repository, project_repository, service_repository)
+
+def get_service_logs_service(
+    logs_repository: LogsCollectionRepository = Depends(get_logs_collection_repository)
+) -> ServiceLogsService:
+    return ServiceLogsService(logs_repository)

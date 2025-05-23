@@ -43,16 +43,16 @@ async def generate_sample_data():
         {"project_id": "4", "name": "Course Management Service", "port": 3008, "status": "Running", "health": "Healthy", "uptime": "5d 4h 30m", "version": "1.2.1", "last_deployment": "2024-02-25 10:20"}
     ]
     
-    # Sample logs
+    # Sample logs with updated structure
     logs = [
-        {"id": "1", "service": "User Service", "severity": "INFO", "message": "User authentication successful", "timestamp": "2024-02-28 12:00:00", "details": {"userId": "123", "method": "OAuth"}},
-        {"id": "2", "service": "Payment Service", "severity": "ERROR", "message": "Payment processing failed", "timestamp": "2024-02-28 12:01:00", "details": {"transactionId": "tx_789", "errorCode": "INVALID_CARD"}},
-        {"id": "3", "service": "Notification Service", "severity": "WARN", "message": "Email delivery delayed: Rate limit exceeded", "timestamp": "2024-02-28 12:02:00", "details": {"emailId": "em_456", "retryCount": 2}},
-        {"id": "4", "service": "Authentication Service", "severity": "DEBUG", "message": "Token refresh completed", "timestamp": "2024-02-28 12:03:00", "details": {"userId": "124", "tokenType": "refresh"}},
-        {"id": "5", "service": "User Service", "severity": "ERROR", "message": "User authentication failed: Invalid credentials", "timestamp": "2024-02-28 12:05:00", "details": {"userId": "125", "method": "OAuth"}},
-        {"id": "6", "service": "Payment Service", "severity": "INFO", "message": "Payment processed successfully", "timestamp": "2024-02-28 12:06:00", "details": {"transactionId": "tx_790", "amount": 100}},
-        {"id": "7", "service": "Notification Service", "severity": "INFO", "message": "Notification sent successfully", "timestamp": "2024-02-28 12:07:00", "details": {"notificationId": "notif_123", "recipient": "user@example.com"}},
-        {"id": "8", "service": "Authentication Service", "severity": "ERROR", "message": "Token refresh failed: Expired token", "timestamp": "2024-02-28 12:08:00", "details": {"userId": "126", "tokenType": "refresh"}}
+        {"id": "1", "project_id": "1", "service_id": "User Service", "severity": "info", "message": "User authentication successful", "timestamp": "2024-02-28 12:00:00", "source": "authentication-module", "test_id": "auth-test-1", "func_id": "login-func"},
+        {"id": "2", "project_id": "1", "service_id": "Payment Service", "severity": "error", "message": "Payment processing failed", "timestamp": "2024-02-28 12:01:00", "source": "payment-gateway", "test_id": "payment-test-1", "func_id": "process-payment"},
+        {"id": "3", "project_id": "1", "service_id": "Notification Service", "severity": "warn", "message": "Email delivery delayed: Rate limit exceeded", "timestamp": "2024-02-28 12:02:00", "source": "email-service", "test_id": "email-test-1", "func_id": "send-email"},
+        {"id": "4", "project_id": "2", "service_id": "Authentication Service", "severity": "debug", "message": "Token refresh completed", "timestamp": "2024-02-28 12:03:00", "source": "token-service", "test_id": "token-test-1", "func_id": "refresh-token"},
+        {"id": "5", "project_id": "2", "service_id": "User Service", "severity": "error", "message": "User authentication failed: Invalid credentials", "timestamp": "2024-02-28 12:05:00", "source": "authentication-module", "test_id": "auth-test-2", "func_id": "login-func"},
+        {"id": "6", "project_id": "3", "service_id": "Payment Service", "severity": "info", "message": "Payment processed successfully", "timestamp": "2024-02-28 12:06:00", "source": "payment-gateway", "test_id": "payment-test-2", "func_id": "process-payment"},
+        {"id": "7", "project_id": "3", "service_id": "Notification Service", "severity": "info", "message": "Notification sent successfully", "timestamp": "2024-02-28 12:07:00", "source": "notification-service", "test_id": "notif-test-1", "func_id": "send-notification"},
+        {"id": "8", "project_id": "4", "service_id": "Authentication Service", "severity": "error", "message": "Token refresh failed: Expired token", "timestamp": "2024-02-28 12:08:00", "source": "token-service", "test_id": "token-test-2", "func_id": "refresh-token"}
     ]
     
     # Insert sample projects if collection is empty

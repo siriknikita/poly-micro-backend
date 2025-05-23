@@ -6,15 +6,38 @@ class ProjectRepository(BaseRepository):
     """Repository for project-related database operations"""
     
     def __init__(self, db):
-        super().__init__(db, "projects")
+        super().__init__(db, "poly_micro_projects")
     
     async def get_all_projects(self) -> List[Dict[str, Any]]:
         """Get all projects"""
-        return await self.find_all()
+        projects = await self.find_all()
+        
+        # Transform MongoDB data to match Pydantic model requirements
+        for project in projects:
+            # Convert _id to id if it exists
+            if '_id' in project and 'id' not in project:
+                project['id'] = str(project['_id'])
+            
+            # Add path field if missing (using name as fallback)
+            if 'path' not in project:
+                project['path'] = project.get('name', '').lower().replace(' ', '_')
+                
+        return projects
     
     async def get_project_by_id(self, project_id: str) -> Optional[Dict[str, Any]]:
         """Get a project by ID"""
-        return await self.find_one(project_id)
+        project = await self.find_one(project_id)
+        
+        if project:
+            # Convert _id to id if it exists
+            if '_id' in project and 'id' not in project:
+                project['id'] = str(project['_id'])
+            
+            # Add path field if missing (using name as fallback)
+            if 'path' not in project:
+                project['path'] = project.get('name', '').lower().replace(' ', '_')
+        
+        return project
     
     async def create_project(self, project: ProjectCreate) -> Dict[str, Any]:
         """Create a new project with auto-generated ID"""
@@ -48,3 +71,7 @@ class ProjectRepository(BaseRepository):
     async def delete_project(self, project_id: str) -> bool:
         """Delete a project"""
         return await self.delete(project_id)
+
+    def __str__(self):
+        return f"ProjectRepository({self.db})"
+        

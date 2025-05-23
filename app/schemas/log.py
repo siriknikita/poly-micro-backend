@@ -1,21 +1,26 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
-from enum import Enum as PyEnum
+from enum import StrEnum as PyEnum
+from datetime import datetime
 
-class Severity(str, PyEnum):
+class Severity(PyEnum):
     """Log severity enum"""
-    DEBUG = "DEBUG"
-    INFO = "INFO"
-    WARN = "WARN"
-    ERROR = "ERROR"
+    DEBUG = "debug"
+    INFO = "info"
+    WARN = "warn"
+    ERROR = "error"
+    CRITICAL = "critical"
 
 class LogBase(BaseModel):
     """Base log schema with common attributes"""
-    service: str
-    severity: Severity
+    project_id: str
+    service_id: str
+    test_id: Optional[str] = None
+    func_id: Optional[str] = None
     message: str
+    severity: Severity
     timestamp: Optional[str] = None
-    details: Optional[Dict[str, Any]] = None
+    source: Optional[str] = None
     
     class Config:
         arbitrary_types_allowed = True
@@ -26,11 +31,14 @@ class LogCreate(LogBase):
 
 class LogUpdate(BaseModel):
     """Schema for updating an existing log entry"""
-    service: Optional[str] = None
-    severity: Optional[Severity] = None
+    project_id: Optional[str] = None
+    service_id: Optional[str] = None
+    test_id: Optional[str] = None
+    func_id: Optional[str] = None
     message: Optional[str] = None
+    severity: Optional[Severity] = None
     timestamp: Optional[str] = None
-    details: Optional[Dict[str, Any]] = None
+    source: Optional[str] = None
     
     class Config:
         arbitrary_types_allowed = True

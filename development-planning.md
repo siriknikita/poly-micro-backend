@@ -42,14 +42,28 @@
 
 ## State 7
 
-- [ ] Implement my own logger module, so that I can then parse the logs form the backend directly using the provided projectid in my database.
-Note: We solve a problem of gathering the infromation about the microservices, projects, and other cool stuff, including the testing environment of the user for that specific project/microservice/etc.
-
-Moreover, we will be able to parse in that way the output of the testing, so that it can be easily shown on the screen to the user when connected to the Frontned of an application.
-
-- [ ] Using the prefix parsing, assign a new loogger instance to the project/microserivce/instance/etc.
-- [ ] We can parse the CPU Usage/Memory Usage/Network Usage/Disk Usage directly form the docker-compose image.
-- [ ] Store the obtained data somewhere on the local device storage (for the sake of simplicity)
+- [x] Each log entry should be stored in a DB. Fields are:
+	- `project_id` (Req.)
+	- `service_id` (Req.)
+	- `test_id` (Opt.)
+	- `func_id` (Opt.)
+	- `message` (Req.)
+	- `severity` (Req.) Enum (info, warn, error, debug)
+	- `timestamp` (Req.)
+	- `source` (Opt.)
+- [x] Implement a logging functionality.
+	- [x] Create a **Python class** that will have those fields.
+	- [x] Write setters, getters for these fields.
+- [x] Test the implementation out.
+	- [x] Create a unit tests.
+	- [x] Create an integration tests.
+	- [x] Make sure that the previous tests are passing.
+- [x] Connect the website to the backend implementation.
+	- [x] Fetch the logs endpoint.
+	- [x] Refine the logic of showing the logs on the frontend due to the change in a structure.
+	- [x] Make sure that all the tests are passing on the frontend.
+	- [ ] Fix the issue with the logs not being displayed correctly when the filter is applied.
+- [ ] Commit & Push changes.
 
 ## Stage 8
 

@@ -12,6 +12,8 @@ async def get_all_projects(
     project_service: ProjectService = Depends(get_project_service)
 ):
     """Get all projects"""
+    print("DEBUG: Getting all projects...")
+    print("DEBUG: Project service: ", project_service)
     return await project_service.get_all_projects()
 
 @router.get("/{project_id}", response_model=Project)

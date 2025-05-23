@@ -12,6 +12,7 @@ from mongomock_motor import AsyncMongoMockClient
 from app.main import app as fastapi_app
 from app.db.database import get_database
 from app.core.sample_data import generate_sample_data
+from app.db.repositories.log_repository import LogRepository
 
 
 @pytest.fixture(scope="session")
@@ -73,3 +74,9 @@ async def client(app, populate_test_db):
     """Get AsyncClient for making HTTP requests."""
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
+
+
+@pytest.fixture(scope="function")
+def log_repository(test_db):
+    """Create a LogRepository instance for testing."""
+    return LogRepository(test_db)

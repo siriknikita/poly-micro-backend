@@ -47,6 +47,7 @@ async def health_check():
 async def startup_event():
     db = get_database()
     # Check if collections are empty and populate with sample data if needed
-    if await db.projects.count_documents({}) == 0:
-        await generate_sample_data()
-        print("Sample data generated successfully")
+    await generate_sample_data()
+    # if await db.projects.count_documents({}) == 0:
+    #     await generate_sample_data()
+    #     print("Sample data generated successfully")

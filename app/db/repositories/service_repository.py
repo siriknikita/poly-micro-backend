@@ -7,7 +7,7 @@ class ServiceRepository(BaseRepository):
     """Repository for service-related database operations"""
     
     def __init__(self, db):
-        super().__init__(db, "services")
+        super().__init__(db, "poly_micro_services")
     
     async def get_all_services(self) -> List[Dict[str, Any]]:
         """Get all services"""
