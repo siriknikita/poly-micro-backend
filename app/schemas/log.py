@@ -1,9 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
-from enum import StrEnum as PyEnum
 from datetime import datetime
+from app.core.enum_compat import StrEnum
 
-class Severity(PyEnum):
+class Severity(StrEnum):
     """Log severity enum"""
     DEBUG = "debug"
     INFO = "info"

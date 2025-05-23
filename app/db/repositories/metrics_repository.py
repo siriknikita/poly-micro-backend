@@ -2,6 +2,7 @@ from typing import List, Dict, Any, Optional
 from bson import ObjectId
 from .base_repository import BaseRepository
 from app.schemas.metrics import CPUEntryCreate, CPUEntryUpdate, CPUDataCreate
+from app.core.cache import cached, invalidate_cache
 
 class MetricsRepository(BaseRepository):
     """Repository for metrics-related database operations"""
@@ -9,8 +10,9 @@ class MetricsRepository(BaseRepository):
     def __init__(self, db):
         super().__init__(db, "cpu_data")
     
+    @cached(ttl=300, prefix="metrics:all")
     async def get_all_cpu_data(self) -> List[Dict[str, Any]]:
-        """Get all CPU metrics data"""
+        """Get all CPU metrics data with caching"""
         cpu_data = await self.find_all()
         # Convert _id to id for response compatibility
         for entry in cpu_data:
@@ -18,8 +20,9 @@ class MetricsRepository(BaseRepository):
                 entry["id"] = str(entry["_id"])
         return cpu_data
     
+    @cached(ttl=300, prefix="metrics:by_project")
     async def get_cpu_data_by_project(self, project_id: str) -> List[Dict[str, Any]]:
-        """Get CPU metrics data for a specific project"""
+        """Get CPU metrics data for a specific project with caching"""
         cpu_data = await self.find_all({"project_id": project_id})
         # Convert _id to id for response compatibility
         for entry in cpu_data:
@@ -27,8 +30,9 @@ class MetricsRepository(BaseRepository):
                 entry["id"] = str(entry["_id"])
         return cpu_data
     
+    @cached(ttl=300, prefix="metrics:by_service")
     async def get_cpu_data_by_service(self, service_name: str) -> List[Dict[str, Any]]:
-        """Get CPU metrics data for a specific service"""
+        """Get CPU metrics data for a specific service with caching"""
         cpu_data = await self.find_all({"service_name": service_name})
         # Convert _id to id for response compatibility
         for entry in cpu_data:
@@ -36,8 +40,9 @@ class MetricsRepository(BaseRepository):
                 entry["id"] = str(entry["_id"])
         return cpu_data
     
+    @cached(ttl=300, prefix="metrics:entry_by_id")
     async def get_cpu_entry_by_id(self, cpu_entry_id: str) -> Optional[Dict[str, Any]]:
-        """Get a specific CPU metrics entry by ID"""
+        """Get a specific CPU metrics entry by ID with caching"""
         cpu_entry = await self.find_one(cpu_entry_id)
         if cpu_entry and "_id" in cpu_entry:
             cpu_entry["id"] = str(cpu_entry["_id"])

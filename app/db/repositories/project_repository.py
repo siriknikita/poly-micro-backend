@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional
 from .base_repository import BaseRepository
 from app.schemas.project import ProjectCreate, ProjectUpdate, Project
+from app.core.cache import cached, invalidate_cache
 
 class ProjectRepository(BaseRepository):
     """Repository for project-related database operations"""
@@ -8,8 +9,9 @@ class ProjectRepository(BaseRepository):
     def __init__(self, db):
         super().__init__(db, "poly_micro_projects")
     
+    @cached(ttl=300, prefix="projects:all")
     async def get_all_projects(self) -> List[Dict[str, Any]]:
-        """Get all projects"""
+        """Get all projects with caching"""
         projects = await self.find_all()
         
         # Transform MongoDB data to match Pydantic model requirements
@@ -24,8 +26,9 @@ class ProjectRepository(BaseRepository):
                 
         return projects
     
+    @cached(ttl=300, prefix="projects:by_id")
     async def get_project_by_id(self, project_id: str) -> Optional[Dict[str, Any]]:
-        """Get a project by ID"""
+        """Get a project by ID with caching"""
         project = await self.find_one(project_id)
         
         if project:
@@ -39,8 +42,9 @@ class ProjectRepository(BaseRepository):
         
         return project
     
+    @invalidate_cache(prefix="projects")
     async def create_project(self, project: ProjectCreate) -> Dict[str, Any]:
-        """Create a new project with auto-generated ID"""
+        """Create a new project with auto-generated ID and invalidate cache"""
         # Generate a new ID
         all_projects = await self.find_all(limit=1000)
         max_id = 0
@@ -59,8 +63,9 @@ class ProjectRepository(BaseRepository):
         
         return await self.create(project_data)
     
+    @invalidate_cache(prefix="projects")
     async def update_project(self, project_id: str, project: ProjectUpdate) -> Optional[Dict[str, Any]]:
-        """Update a project"""
+        """Update a project and invalidate cache"""
         # Only update provided fields
         update_data = {k: v for k, v in project.model_dump().items() if v is not None}
         if not update_data:
@@ -68,8 +73,9 @@ class ProjectRepository(BaseRepository):
         
         return await self.update(project_id, update_data)
     
+    @invalidate_cache(prefix="projects")
     async def delete_project(self, project_id: str) -> bool:
-        """Delete a project"""
+        """Delete a project and invalidate cache"""
         return await self.delete(project_id)
 
     def __str__(self):

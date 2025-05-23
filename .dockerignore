@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.venv
+env/
+venv/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local development
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Documentation
+*.md
+!README.md
+LICENSE
+
+# Directories
+data-samples/
+dist/
+build/
+node_modules/
+docker-compose.yml
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test files
+test/
+tests/
+__tests__/
+data-samples/
+tests/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Misc
+.DS_Store

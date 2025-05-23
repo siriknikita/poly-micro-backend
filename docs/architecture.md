@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-The Poly Micro Manager backend implements a **Layered Microservices Architecture** with a clear separation of concerns. This architecture follows modern best practices for building scalable, maintainable, and testable backend systems.
+The Poly Micro Manager backend implements a **Layered Microservices Architecture** with a clear separation of concerns. This architecture follows modern best practices for building scalable, maintainable, and testable backend systems. The backend is fully implemented with a FastAPI server connected to MongoDB for data persistence.
 
 ### Architectural Layers
 
@@ -146,10 +146,11 @@ This architecture is designed to easily accommodate authentication and authoriza
 
 ## Deployment
 
-The architecture supports multiple deployment strategies:
+The architecture implements comprehensive deployment strategies:
 
+- Docker containerization with docker-compose
+- Continuous Integration/Continuous Deployment (CI/CD) pipeline
 - Traditional deployment on servers
-- Docker containerization
 - Kubernetes orchestration
 - Serverless deployment
 
@@ -157,19 +158,20 @@ The architecture supports multiple deployment strategies:
 
 | Characteristic    | Rating (1-5) | Description                                                                 |
 |-------------------|--------------|-----------------------------------------------------------------------------|
-| Deployability     | ★★★★☆        | Easy to deploy with minimal configuration, potential for containerization   |
-| Elasticity        | ★★★☆☆        | Can scale horizontally but requires manual configuration                    |
+| Deployability     | ★★★★★        | Excellent deployability through Docker containerization and docker-compose   |
+| Documentation     | ★★★★★        | Comprehensive documentation with detailed architecture and logging guides   |
+| Elasticity        | ★★★★☆        | Improved elasticity with containerization and easier scaling capabilities  |
 | Evolutionary      | ★★★★★        | Highly modular design allows for easy extension and evolution               |
-| Fault tolerance   | ★★★☆☆        | Basic error handling but limited automatic recovery mechanisms              |
+| Fault tolerance   | ★★★★☆        | Extensive error handling and logging system, including fallbacks and retries |
 | Modularity        | ★★★★★        | Excellent separation of concerns with clear module boundaries               |
 | Overall cost      | ★★★★☆        | Efficient resource usage with minimal overhead                              |
-| Performance       | ★★★★☆        | Non-blocking async I/O for efficient request handling                       |
-| Reliability       | ★★★★☆        | Stable operation with comprehensive error handling                          |
-| Scalability       | ★★★★☆        | Stateless design enables horizontal scaling                                 |
+| Performance       | ★★★★★        | Enhanced performance through Redis caching and non-blocking async I/O      |
+| Reliability       | ★★★★★        | Stable operation with comprehensive error handling and logging system      |
+| Scalability       | ★★★★★        | Stateless design with Docker and Redis cache enables excellent scaling     |
 | Simplicity        | ★★★★☆        | Clean architecture with intuitive component organization                    |
 | Testability       | ★★★★★        | Highly testable due to clear separation of concerns and dependency injection |
 | Maintainability   | ★★★★★        | Well-organized codebase with consistent patterns and documentation          |
-| Security          | ★★★☆☆        | Basic security measures with room for enhancement                           |
+| Security          | ★★★★☆        | Improved security through comprehensive logging and monitoring             |
 
 ## Architectural Considerations and Recommendations
 
@@ -177,13 +179,21 @@ The architecture supports multiple deployment strategies:
 
 1. **Modular Design**: The clear separation of concerns makes the codebase highly maintainable and allows for independent development of components.
 
-2. **Scalability**: The stateless nature of the services and the use of asynchronous I/O with FastAPI enables horizontal scaling.
+2. **Scalability**: The stateless design with Docker and Redis cache enables excellent scaling
 
 3. **Testability**: The dependency injection pattern and clear boundaries between layers make unit testing straightforward.
 
 4. **API Design**: RESTful API design with proper resource modeling ensures a clean and intuitive API surface.
 
-5. **Database Abstraction**: The repository pattern abstracts database operations, making it easier to switch databases or add caching.
+5. **API Gateway**: Adding an API gateway would provide a single entry point for clients and enable additional features like rate limiting.
+
+6. **Database Abstraction**: The repository pattern abstracts database operations, making it easier to switch databases or add Redis caching, which covers all the data access patterns & endpoints.
+
+7. **Docker Integration**: Dockerizing the application would improve deployability and consistency across environments.
+
+8. **Observability**: The system includes a comprehensive logging system for monitoring and debugging capabilities, with detailed documentation. This could be further enhanced with additional metrics and tracing.
+
+9. **Error Handling**: Implementing guard clauses and adding more detailed error messages and error handling improved the user experience.
 
 ### Areas for Improvement
 
@@ -191,11 +201,7 @@ The architecture supports multiple deployment strategies:
 
 2. **API Versioning**: Adding versioning to the API would ensure backward compatibility.
 
-3. **Caching**: Implementing a caching layer could improve performance for frequently accessed data.
-
-4. **Event-Driven Architecture**: For true microservices, consider implementing event-driven patterns for inter-service communication.
-
-5. **Containerization**: Dockerizing the application would improve deployability and consistency across environments.
+3. **Event-Driven Architecture**: For true microservices, consider implementing event-driven patterns for inter-service communication.
 
 ### Future Evolution
 
@@ -203,16 +209,38 @@ The current architecture provides a solid foundation for future evolution:
 
 1. **Breaking into True Microservices**: Each domain (projects, services, logs, metrics) could become a separate microservice with its own database.
 
-2. **API Gateway**: Adding an API gateway would provide a single entry point for clients and enable additional features like rate limiting.
+2. **Message Queues**: Implementing message queues would enable asynchronous processing and better fault tolerance.
 
-3. **Message Queues**: Implementing message queues would enable asynchronous processing and better fault tolerance.
+3. **Service Discovery**: Adding service discovery would make the system more resilient and easier to scale.
 
-4. **Service Discovery**: Adding service discovery would make the system more resilient and easier to scale.
+## Frontend Integration
 
-5. **Observability**: Enhancing logging, metrics, and tracing would improve monitoring and debugging capabilities.
+The frontend application integrates with the backend through a well-defined REST API. Key aspects of the frontend architecture include:
+
+1. **React with TypeScript**: The frontend is built using React with TypeScript for type safety and improved developer experience.
+
+2. **TanStack Query**: Implements TanStack Query (formerly React Query) for efficient API data fetching, caching, and state management. This provides:
+   - Automatic refetching and caching of data
+   - Loading and error states management
+   - Simplified data synchronization
+   - Optimistic updates for improved user experience
+
+3. **Component Architecture**: Follows a modular component architecture with clear separation between UI components and data fetching logic.
+
+## Implementation Status
+
+The system has completed the following implementation stages:
+
+1. **Backend Framework**: Initialized and configured FastAPI server with MongoDB integration
+2. **Data Structures**: Defined and implemented core data models and schemas
+3. **API Endpoints**: Implemented API endpoints for all resources & implemented database operations
+4. **Frontend Integration**: Implemented frontend API fetching using TanStack Query
+5. **Logging System**: Implemented a comprehensive logging system for monitoring and debugging
 
 ## Conclusion
 
 The Poly Micro Manager backend follows a well-designed layered architecture that emphasizes modularity, maintainability, and scalability. While it's not a full microservices architecture in its current form, it provides a solid foundation for evolving towards one as the application's needs grow.
 
-The clear separation of concerns, RESTful API design, and abstraction of data access make the codebase easy to understand, modify, and extend. With the recommended improvements, it can evolve into a robust, scalable, and secure system capable of handling complex microservices management requirements.
+The clear separation of concerns, RESTful API design, and abstraction of data access make the codebase easy to understand, modify, and extend. The integration with TanStack Query in the frontend provides a robust data fetching solution with excellent caching and state management capabilities.
+
+With the recommended improvements, the system can evolve into a robust, scalable, and secure solution capable of handling complex microservices management requirements.
