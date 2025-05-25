@@ -1,9 +1,13 @@
 from fastapi import APIRouter
-from app.api.routes import projects, services, logs, metrics, service_logs
+from app.api.routes import projects, services, logs, metrics, service_logs, auth
 
 api_router = APIRouter()
 
 # Include all the routers
+# Auth router should come first for proper middleware processing
+api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+
+# Service routers
 api_router.include_router(projects.router, prefix="/projects", tags=["Projects"])
 api_router.include_router(services.router, prefix="/services", tags=["Services"])
 api_router.include_router(logs.router, prefix="/logs", tags=["Logs"])

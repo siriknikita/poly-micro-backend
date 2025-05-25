@@ -9,6 +9,7 @@ import redis
 import logging
 from datetime import timedelta
 from functools import wraps
+from bson import ObjectId
 
 # Set up logging
 logger = logging.getLogger("cache")
@@ -38,9 +39,16 @@ if CACHE_ENABLED:
         CACHE_ENABLED = False
 
 
+class MongoJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder for MongoDB objects"""
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        return super().default(obj)
+
 def serialize(data: Any) -> str:
     """Serialize data to JSON string"""
-    return json.dumps(data)
+    return json.dumps(data, cls=MongoJSONEncoder)
 
 
 def deserialize(data_str: str) -> Any:

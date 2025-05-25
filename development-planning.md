@@ -63,14 +63,24 @@
 	- [x] Refine the logic of showing the logs on the frontend due to the change in a structure.
 	- [x] Make sure that all the tests are passing on the frontend.
 	- [ ] Fix the issue with the logs not being displayed correctly when the filter is applied.
-- [ ] Commit & Push changes.
+- [x] Commit & Push changes.
 
 ## Stage 8
 
-- [ ] Connect an AI model to the testing module, so that it can analyze the logs and provide insights, while also generating the additional tests.
+- [x] Implement an AI agent for logging analysis.
+- [ ] Create new endpoint under the logging module to analyze the logs for provided project.
+- [ ] Integrate with the frontend.
+	- [ ] Add a new button to the `LogViewer` section on the Frontend.
+	- [ ] Link the endpoint call to that button.
+	- [ ] Show the output of the model back on the frontend.
+		- [ ] Get the output from the model.
+		- [ ] Show the chat (similar to the chat in a testing module).
+		- [ ] Display the message in this chat.
+- [ ] Test that everything works as expected.
 
 ### FOR THE FUTURE
 - [ ] Implement the ability to run the local LLM/provide an API tokens directly from the settings page of an application.
+- [ ] Connect an AI model to the testing module, so that it can analyze the logs and provide insights, while also generating the additional tests.
 
 ## Stage 9
 

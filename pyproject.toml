@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi",
- "uvicorn",
- "motor",
- "dotenv>=0.9.9",
+    "uvicorn",
+    "motor",
+    "dotenv>=0.9.9",
+    "passlib>=1.7.4",
+    "python-jose[cryptography]>=3.4.0",
+    "python-multipart>=0.0.20",
+    "bcrypt>=4.3.0",
 ]  # Updated to include motor

@@ -101,6 +101,7 @@ The following endpoints are available for log management:
 - `POST /api/logs/raw` - Create a log from raw dictionary data
 - `PUT /api/logs/{log_id}` - Update an existing log
 - `DELETE /api/logs/{log_id}` - Delete a log entry
+- `POST /api/logs/analyze` - Analyze logs using AI for a specific project
 
 ## Creating Logs
 
@@ -171,6 +172,7 @@ The logs are displayed using the `LogViewer` component which:
 - Displays color-coded severity levels
 - Supports pagination
 - Features real-time log updates
+- Includes AI-powered log analysis capabilities
 
 ## Best Practices
 
@@ -224,6 +226,59 @@ The logs are displayed using the `LogViewer` component which:
 }
 ```
 
+## AI-Powered Log Analysis
+
+The system now includes an AI-powered log analysis feature that uses Gemini 1.5 to provide intelligent insights about logs.
+
+### Backend Implementation
+
+The AI log analysis feature is implemented in the backend with the following components:
+
+1. **Analysis Endpoint**: `POST /api/logs/analyze` accepts a project ID and returns AI-generated insights about the logs.
+
+2. **Schema Models**:
+   - `LogAnalysisRequest`: Contains the project_id for analysis
+   - `LogAnalysisResponse`: Contains the analysis results, log count, and status
+
+3. **AI Integration**: The system uses Google's Gemini 1.5 model to analyze patterns in logs, identify issues, and provide actionable insights.
+
+### Example Usage
+
+```python
+# Request
+import requests
+
+response = requests.post(
+    "http://localhost:8000/api/logs/analyze",
+    json={"project_id": "project-123"}
+)
+
+# Response
+{
+    "project_id": "project-123",
+    "analysis": "Analysis shows 3 critical errors in the payment service...",
+    "log_count": 142,
+    "success": true
+}
+```
+
+### Frontend Integration
+
+The `LogViewer` component includes an "Analyze Logs" button that triggers the AI analysis. Results are displayed in a modal dialog showing:
+
+- Summary of analyzed logs
+- Critical errors and patterns identified
+- Potential issues requiring attention
+- Overall system health assessment
+
+### Configuration
+
+To use the AI analysis feature, you must set up a Gemini API key in your `.env` file:
+
+```
+GEMINI_API_KEY=your_api_key_here
+```
+
 ## Troubleshooting
 
 ### Common Issues
@@ -231,6 +286,7 @@ The logs are displayed using the `LogViewer` component which:
 1. **Missing required fields**: Ensure all required fields are present
 2. **Invalid severity value**: Use only debug, info, warn, or error
 3. **Timestamp format issues**: Use ISO format or let the system generate it
+4. **AI analysis not working**: Verify your Gemini API key is correctly set in the .env file
 
 ### Debugging Tips
 
@@ -251,7 +307,8 @@ The logs are displayed using the `LogViewer` component which:
 | Real-time Updates | ★★★★☆        | Support for real-time log updates with efficient caching                     |
 | Security          | ★★★★☆        | Proper log sanitization and controlled access to sensitive log information  |
 | Integration       | ★★★★★        | Seamless integration with both backend services and frontend components     |
+| AI Analysis       | ★★★★★        | Advanced log analysis using Gemini 1.5 AI to identify patterns and issues   |
 
 ---
 
-*This documentation is for the Poly Micro Manager logging system as of May 2025. Last updated on May 23, 2025.*
+*This documentation is for the Poly Micro Manager logging system as of May 2025. Last updated on May 24, 2025.*

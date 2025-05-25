@@ -52,17 +52,6 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_started
-    environment:
-      - MONGO_URI=mongodb+srv://nikitasirik2:Fckz0RiolIOmcqgK@lab2.2gwtd.mongodb.net/?retryWrites=true&w=majority&appName=Lab2
-      - MONGO_DB=Lab2
-      - HOST=0.0.0.0
-      - PORT=8000
-      - RELOAD=False
-      - ENV=production
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - CACHE_ENABLED=True
-      - PYTHONPATH=/app
     networks:
       - poly-micro-network
     restart: unless-stopped

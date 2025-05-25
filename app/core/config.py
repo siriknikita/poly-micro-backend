@@ -14,12 +14,15 @@ class Settings:
     
     # CORS Settings
     CORS_ORIGINS: List[str] = [
-        "http://localhost:5174",
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://localhost:*",
-        "http://host.docker.internal:*",
-        "*",  # In production, you should replace this with specific domains
+        "*",  # Allow all origins in development
+        "http://localhost",
+        "http://localhost:3001",
+        "http://localhost:8000",
+        "http://127.0.0.1",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:8000",
+        "tauri://localhost", 
+        "tauri://127.0.0.1"
     ]
     
     # MongoDB Settings

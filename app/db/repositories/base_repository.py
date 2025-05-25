@@ -73,3 +73,15 @@ class BaseRepository:
         """Count documents with optional filter"""
         filter_query = filter_query or {}
         return await self.collection.count_documents(filter_query)
+    
+    async def find_one_by_field(self, field_name: str, field_value: Any) -> Optional[Dict[str, Any]]:
+        """Find one document by a specific field value
+        
+        Args:
+            field_name: The name of the field to search by
+            field_value: The value to search for
+            
+        Returns:
+            The matching document or None if not found
+        """
+        return await self.collection.find_one({field_name: field_value})

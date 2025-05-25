@@ -16,13 +16,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Set up CORS
+# Set up CORS - fully permissive for troubleshooting
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"],  # Allow all origins in development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,
 )
 
 # Include API routes
@@ -38,9 +40,9 @@ async def root():
     }
 
 # Health check endpoint
-@app.get("/health")
+@app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    return {"status": "ok", "version": "1.0.0"}
 
 # Startup event to initialize sample data if needed
 @app.on_event("startup")
