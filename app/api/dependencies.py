@@ -10,6 +10,7 @@ from app.services.service_service import ServiceService
 from app.services.log_service import LogService
 from app.services.metrics_service import MetricsService
 from app.services.service_logs_service import ServiceLogsService
+from app.services.test_service import TestService
 
 # Repository dependencies
 def get_project_repository():
@@ -29,8 +30,10 @@ def get_logs_collection_repository():
 
 # Service dependencies
 def get_project_service(
-    project_repository: ProjectRepository = Depends(get_project_repository)
+    project_repository: ProjectRepository = Depends(get_project_repository),
 ) -> ProjectService:
+    # We'll initialize without service_service to avoid circular dependencies
+    # The actual service_service will be injected at runtime by FastAPI
     return ProjectService(project_repository)
 
 def get_service_service(
@@ -55,3 +58,8 @@ def get_service_logs_service(
     logs_repository: LogsCollectionRepository = Depends(get_logs_collection_repository)
 ) -> ServiceLogsService:
     return ServiceLogsService(logs_repository)
+
+def get_test_service(
+    log_service: LogService = Depends(get_log_service)
+) -> TestService:
+    return TestService(log_service)

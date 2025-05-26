@@ -173,6 +173,162 @@ The architecture implements comprehensive deployment strategies:
 | Maintainability   | ★★★★★        | Well-organized codebase with consistent patterns and documentation          |
 | Security          | ★★★★☆        | Improved security through comprehensive logging and monitoring             |
 
+## Dependency Diagrams
+
+The following diagrams illustrate the dependency injection structure of the application, demonstrating how components are wired together.
+
+### Repository Dependencies
+
+```mermaid
+graph TD
+    DB[Database] --> PR[ProjectRepository]
+    DB --> SR[ServiceRepository]
+    DB --> LR[LogRepository]
+    DB --> MR[MetricsRepository]
+    DB --> LCR[LogsCollectionRepository]
+    
+    subgraph Database Layer
+        DB
+    end
+    
+    subgraph Repository Layer
+        PR
+        SR
+        LR
+        MR
+        LCR
+    end
+    
+    classDef database fill:#f9f,stroke:#333,stroke-width:2px
+    classDef repository fill:#bbf,stroke:#333,stroke-width:1px
+    
+    class DB database
+    class PR,SR,LR,MR,LCR repository
+```
+
+### Service Dependencies
+
+```mermaid
+graph TD
+    %% Repository dependencies
+    PR[ProjectRepository] --> PS[ProjectService]
+    PR --> SS[ServiceService]
+    PR --> MS[MetricsService]
+    
+    SR[ServiceRepository] --> SS
+    SR --> MS
+    
+    LR[LogRepository] --> LS[LogService]
+    
+    MR[MetricsRepository] --> MS
+    
+    LCR[LogsCollectionRepository] --> SLS[ServiceLogsService]
+    
+    %% Service dependencies
+    LS --> TS[TestService]
+    
+    subgraph Repository Layer
+        PR
+        SR
+        LR
+        MR
+        LCR
+    end
+    
+    subgraph Service Layer
+        PS
+        SS
+        LS
+        MS
+        SLS
+        TS
+    end
+    
+    classDef repository fill:#bbf,stroke:#333,stroke-width:1px
+    classDef service fill:#bfb,stroke:#333,stroke-width:1px
+    
+    class PR,SR,LR,MR,LCR repository
+    class PS,SS,LS,MS,SLS,TS service
+```
+
+### Complete Dependency Injection Flow
+
+```mermaid
+graph TD
+    %% Database
+    DB[Database] --> PR
+    DB --> SR
+    DB --> LR
+    DB --> MR
+    DB --> LCR
+    
+    %% Repositories
+    PR[ProjectRepository] --> PS[ProjectService]
+    PR --> SS[ServiceService]
+    PR --> MS[MetricsService]
+    
+    SR[ServiceRepository] --> SS
+    SR --> MS
+    
+    LR[LogRepository] --> LS[LogService]
+    
+    MR[MetricsRepository] --> MS
+    
+    LCR[LogsCollectionRepository] --> SLS[ServiceLogsService]
+    
+    %% Services
+    LS --> TS[TestService]
+    
+    %% API Routes (implied)
+    PS --> API[API Endpoints]
+    SS --> API
+    LS --> API
+    MS --> API
+    SLS --> API
+    TS --> API
+    
+    subgraph Data Layer
+        DB
+    end
+    
+    subgraph Repository Layer
+        PR
+        SR
+        LR
+        MR
+        LCR
+    end
+    
+    subgraph Service Layer
+        PS
+        SS
+        LS
+        MS
+        SLS
+        TS
+    end
+    
+    subgraph API Layer
+        API
+    end
+    
+    classDef database fill:#f9f,stroke:#333,stroke-width:2px
+    classDef repository fill:#bbf,stroke:#333,stroke-width:1px
+    classDef service fill:#bfb,stroke:#333,stroke-width:1px
+    classDef api fill:#fbb,stroke:#333,stroke-width:1px
+    
+    class DB database
+    class PR,SR,LR,MR,LCR repository
+    class PS,SS,LS,MS,SLS,TS service
+    class API api
+```
+
+These diagrams illustrate how dependencies are injected throughout the application:
+
+1. **Repository Dependencies**: All repositories depend on the database connection.
+2. **Service Dependencies**: Services depend on one or more repositories and sometimes on other services.
+3. **Complete Flow**: The full dependency flow from database to API endpoints, showing the clean layered architecture.
+
 ## Architectural Considerations and Recommendations
 
 ### Strengths

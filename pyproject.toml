@@ -13,4 +13,5 @@ dependencies = [
     "python-jose[cryptography]>=3.4.0",
     "python-multipart>=0.0.20",
     "bcrypt>=4.3.0",
+    "pytest-asyncio>=1.0.0",
 ]  # Updated to include motor

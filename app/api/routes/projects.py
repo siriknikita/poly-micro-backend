@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path, HTTPException, status
+from fastapi import APIRouter, Depends, Path, HTTPException, status, Request
 from typing import List
 
 from app.services.project_service import ProjectService
@@ -9,20 +9,37 @@ router = APIRouter()
 
 @router.get("/", response_model=List[Project])
 async def get_all_projects(
-    project_service: ProjectService = Depends(get_project_service)
+    project_service: ProjectService = Depends(get_project_service),
+    request: Request = None
 ):
     """Get all projects"""
     print("DEBUG: Getting all projects...")
     print("DEBUG: Project service: ", project_service)
-    return await project_service.get_all_projects()
+    
+    # Pass the request to the service method to enable dependency resolution
+    projects = await project_service.get_all_projects(request)
+    print(f"DEBUG: Projects to return: {projects}")
+    for project in projects:
+        print(f"DEBUG: Project {project.id} has {len(project.microservices or [])} microservices")
+    
+    return projects
 
 @router.get("/{project_id}", response_model=Project)
 async def get_project(
     project_id: str = Path(..., description="The ID of the project to get"),
-    project_service: ProjectService = Depends(get_project_service)
+    project_service: ProjectService = Depends(get_project_service),
+    request: Request = None
 ):
     """Get a specific project by ID"""
-    return await project_service.get_project_by_id(project_id)
+    print(f"DEBUG: Getting project with ID: {project_id}")
+    
+    # Pass the request to the service method to enable dependency resolution
+    project = await project_service.get_project_by_id(project_id, request)
+    
+    print(f"DEBUG: Project to return: {project}")
+    print(f"DEBUG: Project {project.id} has {len(project.microservices or [])} microservices")
+    
+    return project
 
 @router.post("/", response_model=Project, status_code=status.HTTP_201_CREATED)
 async def create_project(
