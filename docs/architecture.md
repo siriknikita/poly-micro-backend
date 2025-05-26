@@ -173,6 +173,39 @@ The architecture implements comprehensive deployment strategies:
 | Maintainability   | ★★★★★        | Well-organized codebase with consistent patterns and documentation          |
 | Security          | ★★★★☆        | Improved security through comprehensive logging and monitoring             |
 
+## Partitioning Structure
+
+### Partitioning Type
+
+The application uses a **Layered Microservices Architecture**. This is a hybrid approach that combines:
+
+1. **Vertical partitioning** by functional layers:
+   - API Layer (handling HTTP requests/responses)
+   - Service Layer (business logic)
+   - Repository Layer (data access)
+   - Schema Layer (data structures)
+   - Core Layer (configuration and utilities)
+
+2. **Horizontal partitioning** by domain:
+   - Projects
+   - Services
+   - Logs
+   - Metrics
+
+Each domain (projects, services, logs, metrics) has its own set of components across the architectural layers, which allows for a clean separation of concerns while maintaining the benefits of a layered architecture.
+
+### Number of Quantas
+
+The application contains **6 main service quantas**:
+- ProjectService
+- ServiceService
+- LogService
+- MetricsService
+- ServiceLogsService
+- TestService
+
+These services are supported by 5 repositories (ProjectRepository, ServiceRepository, LogRepository, MetricsRepository, and LogsCollectionRepository), all connected to a single database instance.
+
 ## Dependency Diagrams
 
 The following diagrams illustrate the dependency injection structure of the application, demonstrating how components are wired together.
@@ -199,8 +232,8 @@ graph TD
         LCR
     end
     
-    classDef database fill:#f9f,stroke:#333,stroke-width:2px
-    classDef repository fill:#bbf,stroke:#333,stroke-width:1px
+    classDef database fill:#e6ccff,stroke:#333,stroke-width:2px
+    classDef repository fill:#d1e0ff,stroke:#333,stroke-width:1px
     
     class DB database
     class PR,SR,LR,MR,LCR repository
@@ -244,8 +277,8 @@ graph TD
         TS
     end
     
-    classDef repository fill:#bbf,stroke:#333,stroke-width:1px
-    classDef service fill:#bfb,stroke:#333,stroke-width:1px
+    classDef repository fill:#d1e0ff,stroke:#333,stroke-width:1px
+    classDef service fill:#d1f0d1,stroke:#333,stroke-width:1px
     
     class PR,SR,LR,MR,LCR repository
     class PS,SS,LS,MS,SLS,TS service
@@ -312,10 +345,10 @@ graph TD
         API
     end
     
-    classDef database fill:#f9f,stroke:#333,stroke-width:2px
-    classDef repository fill:#bbf,stroke:#333,stroke-width:1px
-    classDef service fill:#bfb,stroke:#333,stroke-width:1px
-    classDef api fill:#fbb,stroke:#333,stroke-width:1px
+    classDef database fill:#e6ccff,stroke:#333,stroke-width:2px
+    classDef repository fill:#d1e0ff,stroke:#333,stroke-width:1px
+    classDef service fill:#d1f0d1,stroke:#333,stroke-width:1px
+    classDef api fill:#ffe6cc,stroke:#333,stroke-width:1px
     
     class DB database
     class PR,SR,LR,MR,LCR repository
