@@ -23,7 +23,23 @@ class ServiceRepository(BaseRepository):
     @cached(ttl=300, prefix="services:by_project")
     async def get_services_by_project(self, project_id: str) -> List[Dict[str, Any]]:
         """Get all services for a specific project with caching"""
-        services = await self.find_all({"project_id": project_id})
+        try:
+            # Try to convert project_id to ObjectId
+            print(f"Trying to query services with ObjectId for project: {project_id}")
+            services = await self.find_all({"project_id": project_id})
+            if services:
+                print(f"Found {len(services)} services using ObjectId for project: {project_id}")
+            else:
+                # Fallback to string ID if no results with ObjectId
+                print(f"No services found with ObjectId, trying string ID for project: {project_id}")
+                services = await self.find_all({"project_id": project_id})
+                print(f"Found {len(services)} services using string ID for project: {project_id}")
+        except Exception as e:
+            # If ObjectId conversion fails, use string ID
+            print(f"Failed to convert to ObjectId: {str(e)}, using string ID for project: {project_id}")
+            services = await self.find_all({"project_id": project_id})
+            print(f"Found {len(services)} services using string ID for project: {project_id}")
+            
         # Convert _id to id for response compatibility
         for service in services:
             if "_id" in service:
@@ -74,5 +90,15 @@ class ServiceRepository(BaseRepository):
         """Check if a service exists for the given project with short-lived caching"""
         print("Checking service exists for project", project_id, "and service", service_name)
         print('All services', await self.get_services_by_project(project_id))
+        
+        try:
+            # Try with ObjectId first
+            service = await self.collection.find_one({"project_id": ObjectId(project_id), "name": service_name})
+            if service:
+                return True
+        except:
+            pass
+            
+        # Fallback to string ID
         service = await self.collection.find_one({"project_id": project_id, "name": service_name})
         return service is not None

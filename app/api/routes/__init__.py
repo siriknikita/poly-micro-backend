@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.routes import projects, services, logs, metrics, service_logs, auth, tests
+from app.api.routes import projects, services, logs, metrics, service_logs, auth, tests, questions
 
 api_router = APIRouter()
 
@@ -14,3 +14,4 @@ api_router.include_router(logs.router, prefix="/logs", tags=["Logs"])
 api_router.include_router(metrics.router, prefix="/metrics", tags=["Metrics"])
 api_router.include_router(service_logs.router, prefix="/service-logs", tags=["Service Logs"])
 api_router.include_router(tests.router, prefix="/tests", tags=["Tests"])
+api_router.include_router(questions.router, prefix="/questions", tags=["Questions"])
