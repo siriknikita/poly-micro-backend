@@ -58,7 +58,13 @@ class ProjectRepository(BaseRepository):
         
         # Create new project with incremented ID
         new_id = str(max_id + 1)
-        project_data = project.model_dump()
+        
+        # Handle different types - if it's a Pydantic model use dict(), if already a dict use as is
+        if hasattr(project, 'dict'):
+            project_data = project.dict()
+        else:
+            project_data = project
+            
         project_data["id"] = new_id
         
         return await self.create(project_data)
@@ -67,7 +73,8 @@ class ProjectRepository(BaseRepository):
     async def update_project(self, project_id: str, project: ProjectUpdate) -> Optional[Dict[str, Any]]:
         """Update a project and invalidate cache"""
         # Only update provided fields
-        update_data = {k: v for k, v in project.model_dump().items() if v is not None}
+        # Handle different Pydantic versions by using dict() instead of model_dump()
+        update_data = {k: v for k, v in project.dict().items() if v is not None}
         if not update_data:
             return await self.find_one(project_id)  # Return current project if no updates
         

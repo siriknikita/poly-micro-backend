@@ -25,7 +25,7 @@ class Database:
     @classmethod
     def get_db(cls):
         if cls.db is None:
-            cls.db = cls.get_client().Lab2  # You can make this configurable
+            cls.db = cls.get_client().poly_micro_manager
         return cls.db
 
 # Get DB instance

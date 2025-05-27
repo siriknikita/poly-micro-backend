@@ -29,7 +29,17 @@ class LogService:
             source=source
         )
         print('ALL LOGS', logs)
-        return [Log(**log) for log in logs]
+        # Ensure each log has an ID field for proper validation
+        result = []
+        for log in logs:
+            if 'id' not in log and '_id' in log:
+                # Use MongoDB's _id if no id is present
+                log['id'] = str(log['_id'])
+            elif 'id' not in log:
+                # Assign a fallback ID if neither id nor _id is present
+                log['id'] = 'unknown'
+            result.append(Log(**log))
+        return result
     
     async def get_log_by_id(self, log_id: str) -> Log:
         """Get a log by ID"""
@@ -45,12 +55,32 @@ class LogService:
         all_logs = await self.log_repository.get_all_logs()
         print('LOGS', logs)
         print('ALL LOGS', all_logs)
-        return [Log(**log) for log in logs]
+        # Ensure each log has an ID field for proper validation
+        result = []
+        for log in logs:
+            if 'id' not in log and '_id' in log:
+                # Use MongoDB's _id if no id is present
+                log['id'] = str(log['_id'])
+            elif 'id' not in log:
+                # Assign a fallback ID if neither id nor _id is present
+                log['id'] = 'unknown'
+            result.append(Log(**log))
+        return result
     
     async def get_logs_by_service(self, service_id: str) -> List[Log]:
         """Get all logs for a specific service"""
         logs = await self.log_repository.get_logs_by_service(service_id)
-        return [Log(**log) for log in logs]
+        # Ensure each log has an ID field for proper validation
+        result = []
+        for log in logs:
+            if 'id' not in log and '_id' in log:
+                # Use MongoDB's _id if no id is present
+                log['id'] = str(log['_id'])
+            elif 'id' not in log:
+                # Assign a fallback ID if neither id nor _id is present
+                log['id'] = 'unknown'
+            result.append(Log(**log))
+        return result
     
     async def create_log(self, log: Union[LogCreate, LogEntry]) -> Log:
         """Create a new log entry"""

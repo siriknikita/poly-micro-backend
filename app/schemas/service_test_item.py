@@ -13,6 +13,10 @@ class ServiceTestItem(BaseModel):
     status: Optional[str] = None
     version: Optional[str] = None
     last_deployment: Optional[str] = None
+    port: Optional[int] = None
+    url: Optional[str] = None
+    health: Optional[str] = None
+    uptime: Optional[str] = None
     
     model_config = {
         "from_attributes": True,

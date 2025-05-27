@@ -27,7 +27,7 @@ class Settings:
     
     # MongoDB Settings
     MONGO_URI: str = config("MONGO_URI", default="mongodb://localhost:27017")
-    MONGO_DB: str = config("MONGO_DB", default="Lab2")
+    MONGO_DB: str = config("MONGO_DB", default="poly-micro-manager")
 
 # Create global settings instance
 settings = Settings()

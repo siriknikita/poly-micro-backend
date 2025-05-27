@@ -39,7 +39,11 @@ async def get_services_by_project(
             children=item.children,
             status=item.status,
             version=item.version,
-            last_deployment=item.lastDeployed  # Convert camelCase to snake_case
+            last_deployment=item.lastDeployed,  # Convert camelCase to snake_case
+            port=item.port,
+            url=item.url,
+            health=item.health,
+            uptime=item.uptime
         )
         result.append(service_item)
     

@@ -41,7 +41,8 @@ class ServiceRepository(BaseRepository):
     @invalidate_cache(prefix="services")
     async def create_service(self, service: ServiceCreate) -> Dict[str, Any]:
         """Create a new service and invalidate cache"""
-        service_data = service.model_dump()
+        # Use dict() for Pydantic v1 compatibility
+        service_data = service.dict() if hasattr(service, 'dict') else service
         result = await self.collection.insert_one(service_data)
         
         # Add ID to the response
@@ -51,8 +52,8 @@ class ServiceRepository(BaseRepository):
     @invalidate_cache(prefix="services")
     async def update_service(self, service_id: str, service: ServiceUpdate) -> Optional[Dict[str, Any]]:
         """Update a service and invalidate cache"""
-        # Only update provided fields
-        update_data = {k: v for k, v in service.model_dump().items() if v is not None}
+        # Only update provided fields - use dict() for Pydantic v1 compatibility
+        update_data = {k: v for k, v in service.dict().items() if v is not None}
         if not update_data:
             return await self.get_service_by_id(service_id)  # Return current service if no updates
         

@@ -9,7 +9,7 @@ class LogRepository(BaseRepository):
     """Repository for log-related database operations"""
     
     def __init__(self, db):
-        super().__init__(db, "logs")
+        super().__init__(db, "poly_micro_logs")
     
     # Cache is applied based on combined parameters so different filter combinations are cached separately
     @cached(ttl=300, prefix="logs:filtered")
@@ -49,7 +49,7 @@ class LogRepository(BaseRepository):
         if isinstance(log, LogEntry):
             log_dict = log.to_dict()
         else:
-            log_dict = log.model_dump()
+            log_dict = log.dict()
             
         if not log_dict.get("timestamp"):
             log_dict["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -78,7 +78,7 @@ class LogRepository(BaseRepository):
         if isinstance(log, LogEntry):
             update_data = log.to_dict()
         else:
-            update_data = {k: v for k, v in log.model_dump().items() if v is not None}
+            update_data = {k: v for k, v in log.dict().items() if v is not None}
             
         if not update_data:
             return await self.find_one(log_id)  # Return current log if no updates

@@ -535,7 +535,7 @@ class TestService:
                 response.metadata["filesystem_error"] = f"Tests directory does not exist: {service_tests_path}"
             
             # Next, try to fetch tests from the database
-            test_collection = self.db["tests"]
+            test_collection = self.db["poly_micro_tests"]
             await custom_logger.ainfo(f"Checking database for tests for service_id {service_id}")
             
             # Query for tests in the database for this service

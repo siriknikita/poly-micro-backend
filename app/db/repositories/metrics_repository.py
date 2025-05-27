@@ -8,7 +8,7 @@ class MetricsRepository(BaseRepository):
     """Repository for metrics-related database operations"""
     
     def __init__(self, db):
-        super().__init__(db, "cpu_data")
+        super().__init__(db, "poly_micro_metrics")
     
     @cached(ttl=300, prefix="metrics:all")
     async def get_all_cpu_data(self) -> List[Dict[str, Any]]:

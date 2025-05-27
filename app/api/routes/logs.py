@@ -3,7 +3,8 @@ from typing import List, Optional, Dict, Any
 import os
 
 from app.services.log_service import LogService
-from app.api.dependencies import get_log_service
+from app.services.service_service import ServiceService
+from app.api.dependencies import get_log_service, get_service_service
 from app.schemas.log import Log, LogCreate, LogUpdate, Severity
 from app.schemas.analysis import LogAnalysisResponse, LogAnalysisRequest
 
@@ -140,7 +141,7 @@ def get_gemini_model():
         )
 
 
-def analyze_logs_with_gemini(logs: list[Log]) -> str:
+async def analyze_logs_with_gemini(logs: list[Log], service_service: Optional[ServiceService] = None) -> str:
     """Analyze logs using Gemini AI and return insights"""
     import traceback
     
@@ -162,6 +163,30 @@ def analyze_logs_with_gemini(logs: list[Log]) -> str:
             print(f"Traceback: {traceback.format_exc()}")
             return f"Error: {error_msg}"
 
+        # Create a map of service IDs to service names if service_service is provided
+        service_names = {}
+        if service_service:
+            try:
+                # Collect all unique service IDs from logs
+                service_ids = set()
+                for log in logs:
+                    if log.service_id:
+                        service_ids.add(log.service_id)
+                
+                # Fetch service details for each service ID
+                for service_id in service_ids:
+                    try:
+                        service = await service_service.get_service_by_id(service_id)
+                        if service and hasattr(service, 'name'):
+                            service_names[service_id] = service.name
+                    except Exception as service_error:
+                        print(f"Error fetching service {service_id}: {str(service_error)}")
+                        # Continue with other services even if one fails
+            except Exception as map_error:
+                print(f"Error creating service name map: {str(map_error)}")
+                print(f"Traceback: {traceback.format_exc()}")
+                # Continue without service names if mapping fails
+
         print(f"Formatting {len(logs)} log entries...")
         log_entries_str = ""
         for i, log_item in enumerate(logs):
@@ -180,7 +205,10 @@ def analyze_logs_with_gemini(logs: list[Log]) -> str:
             # Safely format each log entry
             try:
                 timestamp = log_item.timestamp if log_item.timestamp else 'N/A'
-                service = log_item.service_id if log_item.service_id else 'N/A'
+                service_id = log_item.service_id if log_item.service_id else 'N/A'
+                
+                # Use service name if available, otherwise fall back to ID
+                service = service_names.get(service_id, service_id) if service_id != 'N/A' else 'N/A'
                 message = log_item.message if log_item.message else 'N/A'
                 source = log_item.source if log_item.source else 'N/A'
                 
@@ -237,7 +265,8 @@ def analyze_logs_with_gemini(logs: list[Log]) -> str:
 @router.post("/analyze", response_model=LogAnalysisResponse)
 async def analyze_project_logs(
     request: LogAnalysisRequest,
-    log_service: LogService = Depends(get_log_service)
+    log_service: LogService = Depends(get_log_service),
+    service_service: ServiceService = Depends(get_service_service)
 ):
     """Analyze logs for a specific project using AI"""
     try:
@@ -275,7 +304,7 @@ async def analyze_project_logs(
         
         # Analyze logs using Gemini
         try:
-            analysis = analyze_logs_with_gemini(logs)
+            analysis = await analyze_logs_with_gemini(logs, service_service)
             print(f"Log analysis completed: {analysis}")
         except Exception as analysis_error:
             print(f"Error during log analysis: {str(analysis_error)}")

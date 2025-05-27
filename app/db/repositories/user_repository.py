@@ -11,7 +11,7 @@ class UserRepository(BaseRepository):
     """Repository for user-related database operations"""
     
     def __init__(self, db):
-        super().__init__(db, "users")
+        super().__init__(db, "poly_micro_users")
     
     @cached(ttl=300, prefix="users:all")
     async def get_all_users(self) -> List[Dict[str, Any]]:

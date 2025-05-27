@@ -39,10 +39,10 @@ The Docker setup includes:
 
 The following environment variables can be modified in the `docker-compose.yml` file:
 
-| Variable      | Default                | Description                        |
-|--------------|------------------------|------------------------------------|  
+| Variable      | Default                 | Description                        |
+|---------------|-------------------------|------------------------------------|  
 | MONGO_URI     | mongodb://mongodb:27017 | MongoDB connection string          |
-| MONGO_DB      | Lab2                    | MongoDB database name              |
+| MONGO_DB      | poly_micro_manager      | MongoDB database name              |
 | HOST          | 0.0.0.0                 | Host to bind the server to         |
 | PORT          | 8000                    | Port to run the server on          |
 | RELOAD        | False                   | Enable auto-reload for development |

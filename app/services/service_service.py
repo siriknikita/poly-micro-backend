@@ -66,7 +66,11 @@ class ServiceService:
                         "projectId": project_id,
                         "status": service_obj.status or "offline",
                         "version": service_obj.version or "1.0.0",
-                        "lastDeployed": service_obj.last_deployment
+                        "lastDeployed": service_obj.last_deployment,
+                        "port": service_obj.port,
+                        "url": service_obj.url,
+                        "health": service_obj.health or "Healthy",
+                        "uptime": service_obj.uptime or "0s"
                     }
                     
                     # Create the TestItem object
