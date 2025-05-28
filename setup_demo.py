@@ -76,7 +76,7 @@ DEMO_SERVICES = [
         "url": "http://localhost:8002",
         "port": 8002,
         "status": "Running",
-        "health": "Healthy",
+        "health": "Warning",
         "version": "1.0.0",
         "uptime": "2h 15m",
         "last_deployment": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
