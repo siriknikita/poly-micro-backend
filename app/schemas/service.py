@@ -12,6 +12,7 @@ class ServiceBase(BaseModel):
     uptime: Optional[str] = None
     version: Optional[str] = None
     last_deployment: Optional[str] = None
+    container_name: Optional[str] = None  # Docker container name
 
 class ServiceCreate(ServiceBase):
     """Schema for creating a new service"""
@@ -28,6 +29,7 @@ class ServiceUpdate(BaseModel):
     uptime: Optional[str] = None
     version: Optional[str] = None
     last_deployment: Optional[str] = None
+    container_name: Optional[str] = None
 
 class Service(ServiceBase):
     """Schema for service response"""

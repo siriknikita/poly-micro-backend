@@ -11,6 +11,7 @@ from app.services.log_service import LogService
 from app.services.metrics_service import MetricsService
 from app.services.service_logs_service import ServiceLogsService
 from app.services.test_service import TestService
+from app.services.service_manager import ServiceManager
 
 # Repository dependencies
 def get_project_repository():
@@ -63,3 +64,8 @@ def get_test_service(
     log_service: LogService = Depends(get_log_service)
 ) -> TestService:
     return TestService(log_service)
+
+def get_service_manager(
+    log_service: LogService = Depends(get_log_service)
+) -> ServiceManager:
+    return ServiceManager(log_service)

@@ -28,7 +28,6 @@ class LogService:
             severity=severity,
             source=source
         )
-        print('ALL LOGS', logs)
         # Ensure each log has an ID field for proper validation
         result = []
         for log in logs:
@@ -50,11 +49,7 @@ class LogService:
     
     async def get_logs_by_project(self, project_id: str) -> List[Log]:
         """Get all logs for a specific project"""
-        print('PROJECT ID', project_id)
         logs = await self.log_repository.get_logs_by_project(project_id)
-        all_logs = await self.log_repository.get_all_logs()
-        print('LOGS', logs)
-        print('ALL LOGS', all_logs)
         # Ensure each log has an ID field for proper validation
         result = []
         for log in logs:

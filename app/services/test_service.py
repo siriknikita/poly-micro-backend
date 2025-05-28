@@ -89,6 +89,19 @@ class TestService:
         
         return test_result
     
+    async def _check_docker_available(self) -> bool:
+        """Check if Docker is available on the system"""
+        try:
+            process = await asyncio.create_subprocess_exec(
+                "which", "docker",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await process.communicate()
+            return process.returncode == 0 and stdout.strip()
+        except Exception:
+            return False
+
     async def execute_test_run(self, test_run_id: str) -> TestRunResult:
         """Execute a test run in a Docker container"""
         # Load test run metadata
@@ -101,6 +114,38 @@ class TestService:
         self._save_test_run_metadata(test_run)
         
         try:
+            # Check if Docker is available
+            docker_available = await self._check_docker_available()
+            if not docker_available:
+                error_message = "Docker is not available on the system. Cannot run tests in containers."
+                logger.error(error_message)
+                
+                # Create a log entry for the error
+                error_log = await self.log_service.create_log(
+                    LogCreate(
+                        project_id=test_run.project_id,
+                        service_id=test_run.service_id,
+                        test_id=test_run.id,
+                        message=error_message,
+                        severity=Severity.ERROR,
+                        source="test_service",
+                        metadata={}
+                    )
+                )
+                
+                # Update test run status to failed
+                test_run.status = TestStatus.ERROR
+                test_run.end_time = datetime.now()
+                test_run.log_ids.append(error_log.id)
+                
+                # Store error message in metadata
+                if test_run.metadata is None:
+                    test_run.metadata = {}
+                test_run.metadata["error_message"] = error_message
+                
+                self._save_test_run_metadata(test_run)
+                return test_run
+            
             # Execute the test in Docker container
             await self._run_test_in_container(test_run)
             
@@ -141,6 +186,10 @@ class TestService:
         """Run the test in a Docker container and collect output"""
         logger.info(f"Running test in container: {test_run.id}")
         
+        # Check Docker availability again as a safeguard
+        if not await self._check_docker_available():
+            raise RuntimeError("Docker is not available on the system")
+            
         test_path = test_run.test_path
         test_id = test_run.test_id
         
@@ -592,6 +641,133 @@ class TestService:
         # The output format is typically lines of nodeids
         lines = output.strip().split('\n')
         return [line.strip() for line in lines if line.strip()]
+        
+    async def _process_json_report(self, test_run: TestRunResult, report_path: str) -> None:
+        """Process the pytest JSON report and update the test run with results
+        
+        Args:
+            test_run: The test run to update
+            report_path: Path to the JSON report file
+        """
+        try:
+            if not os.path.exists(report_path):
+                raise FileNotFoundError(f"JSON report file not found: {report_path}")
+                
+            with open(report_path, 'r') as f:
+                report_data = json.load(f)
+                
+            # Extract summary information
+            summary = report_data.get('summary', {})
+            test_run.total_tests = summary.get('total', 0)
+            test_run.passed_tests = summary.get('passed', 0)
+            test_run.failed_tests = summary.get('failed', 0)
+            test_run.error_tests = summary.get('error', 0)
+            test_run.skipped_tests = summary.get('skipped', 0)
+            
+            # Save the JSON report data as metadata
+            if not test_run.metadata:
+                test_run.metadata = {}
+            test_run.metadata['json_report'] = report_data
+            
+            # Process test results and create logs for each test
+            await self._create_test_result_logs(test_run, report_data)
+            
+            # Determine overall status based on test results
+            if test_run.failed_tests > 0 or test_run.error_tests > 0:
+                test_run.status = TestStatus.FAILED
+            else:
+                test_run.status = TestStatus.PASSED
+                
+        except Exception as e:
+            logger.error(f"Error processing JSON report: {str(e)}")
+            test_run.status = TestStatus.ERROR
+            
+            # Create error log
+            error_log = await self.log_service.create_log(
+                LogCreate(
+                    project_id=test_run.project_id,
+                    service_id=test_run.service_id,
+                    test_id=test_run.id,
+                    message=f"Error processing test report: {str(e)}",
+                    severity=Severity.ERROR,
+                    source="test_service"
+                )
+            )
+            
+            test_run.log_ids.append(error_log.id)
+            
+        # Save updated test run metadata
+        self._save_test_run_metadata(test_run)
+            
+    async def _create_test_result_logs(self, test_run: TestRunResult, report_data: Dict[str, Any]) -> None:
+        """Create logs for each individual test result from the JSON report
+        
+        Args:
+            test_run: The test run
+            report_data: The pytest JSON report data
+        """
+        # Get test results from the report
+        tests = report_data.get('tests', [])
+        
+        for test in tests:
+            nodeid = test.get('nodeid', '')
+            outcome = test.get('outcome', 'unknown')
+            duration = test.get('duration', 0)
+            
+            # Determine severity based on outcome
+            severity = Severity.INFO
+            if outcome == 'failed':
+                severity = Severity.ERROR
+            elif outcome == 'skipped':
+                severity = Severity.WARNING
+                
+            # Extract test name from nodeid
+            test_name = nodeid.split('::')[-1] if '::' in nodeid else nodeid
+            
+            # Create log message based on outcome
+            message = f"Test {test_name} {outcome}"
+            if outcome == 'passed':
+                message = f"✅ {message}"
+            elif outcome == 'failed':
+                message = f"❌ {message}"
+            elif outcome == 'skipped':
+                message = f"⚠️ {message}"
+                
+            # Create metadata with test details
+            metadata = {
+                'nodeid': nodeid,
+                'outcome': outcome,
+                'duration': duration,
+                'test_name': test_name
+            }
+            
+            # Add failure details if test failed
+            if outcome == 'failed':
+                call = test.get('call', {})
+                crash = test.get('crash', {})
+                
+                if call:
+                    longrepr = call.get('longrepr', '')
+                    if longrepr:
+                        metadata['failure_details'] = longrepr
+                        
+                if crash:
+                    metadata['crash_details'] = crash
+            
+            # Create log entry for this test
+            log_entry = await self.log_service.create_log(
+                LogCreate(
+                    project_id=test_run.project_id,
+                    service_id=test_run.service_id,
+                    test_id=test_run.id,
+                    message=message,
+                    severity=severity,
+                    source="test_result",
+                    metadata=metadata
+                )
+            )
+            
+            test_run.log_ids.append(log_entry.id)
     
     def _create_test_item_from_nodeid(self, nodeid: str, index: int) -> TestItem:
         """Create a TestItem from a pytest nodeid"""
@@ -668,3 +844,198 @@ class TestService:
         except Exception as e:
             logger.error(f"Error loading service tests: {str(e)}")
             return None
+            
+    async def run_service_tests(self, project_id: str, service_id: str, service_name: str, container_name: str) -> TestRunResult:
+        """Run all tests for a service in its Docker container using pytest with JSON reporting
+        
+        Args:
+            project_id: The ID of the project
+            service_id: The ID of the service
+            service_name: The name of the service
+            container_name: The name of the Docker container
+            
+        Returns:
+            TestRunResult containing the results of the test run
+        """
+        # Create a new test run for this service
+        test_run = await self.create_test_run(
+            TestRunCreate(
+                project_id=project_id,
+                service_id=service_id,
+                test_path="/tests",  # Standard location for tests in container
+                test_id=None  # Run all tests, not a specific one
+            )
+        )
+        
+        # Check Docker availability
+        if not await self._check_docker_available():
+            await self.log_service.create_log(
+                LogCreate(
+                    project_id=project_id,
+                    service_id=service_id,
+                    test_id=test_run.id,
+                    message="Docker is not available on the system",
+                    severity=Severity.ERROR,
+                    source="test_service"
+                )
+            )
+            test_run.status = TestStatus.ERROR
+            self._save_test_run_metadata(test_run)
+            return test_run
+        
+        # Update test run to indicate it's running
+        test_run.status = TestStatus.RUNNING
+        self._save_test_run_metadata(test_run)
+        
+        # Create custom logger for this run
+        custom_logger = create_logger(f"test_run_{test_run.id}")
+        await custom_logger.ainfo(f"Starting test run for service {service_name} in container {container_name}")
+        
+        try:
+            # Get test results directory for this run
+            project_dir = os.path.join(self.test_results_dir, project_id)
+            test_run_dir = os.path.join(project_dir, test_run.id)
+            logs_dir = os.path.join(test_run_dir, "logs")
+            os.makedirs(logs_dir, exist_ok=True)
+            
+            # Prepare the JSON report file path
+            json_report_path = "/tmp/report.json"
+            local_report_path = os.path.join(test_run_dir, f"report-{service_name}.json")
+            
+            # Build and execute the pytest command with JSON reporting
+            pytest_cmd = f"cd /tests && pytest --json-report --json-report-file={json_report_path}"
+            docker_cmd = ["docker", "exec", container_name, "sh", "-c", pytest_cmd]
+            
+            await custom_logger.ainfo(f"Executing command: {' '.join(docker_cmd)}")
+            
+            # Execute the command and capture output
+            start_time = datetime.now()
+            process = await asyncio.create_subprocess_exec(
+                *docker_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            stdout, stderr = await process.communicate()
+            end_time = datetime.now()
+            
+            # Calculate duration
+            duration = (end_time - start_time).total_seconds()
+            
+            # Save stdout and stderr
+            with open(os.path.join(logs_dir, "stdout.log"), "wb") as f:
+                f.write(stdout)
+            
+            with open(os.path.join(logs_dir, "stderr.log"), "wb") as f:
+                f.write(stderr)
+            
+            # Create logs for stdout and stderr
+            stdout_log = await self.log_service.create_log(
+                LogCreate(
+                    project_id=project_id,
+                    service_id=service_id,
+                    test_id=test_run.id,
+                    message="Test execution stdout",
+                    severity=Severity.INFO,
+                    source="test_execution",
+                    metadata={
+                        "content": stdout.decode('utf-8', errors='replace')
+                    }
+                )
+            )
+            
+            stderr_log = await self.log_service.create_log(
+                LogCreate(
+                    project_id=project_id,
+                    service_id=service_id,
+                    test_id=test_run.id,
+                    message="Test execution stderr",
+                    severity=Severity.WARNING if stderr else Severity.INFO,
+                    source="test_execution",
+                    metadata={
+                        "content": stderr.decode('utf-8', errors='replace')
+                    }
+                )
+            )
+            
+            test_run.log_ids.extend([stdout_log.id, stderr_log.id])
+            
+            # Copy the JSON report from the container
+            copy_cmd = [
+                "docker", "cp",
+                f"{container_name}:{json_report_path}",
+                local_report_path
+            ]
+            
+            await custom_logger.ainfo(f"Copying test report: {' '.join(copy_cmd)}")
+            
+            try:
+                copy_process = await asyncio.create_subprocess_exec(
+                    *copy_cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                copy_stdout, copy_stderr = await copy_process.communicate()
+                
+                if copy_process.returncode != 0:
+                    await custom_logger.aerror(f"Failed to copy test report: {copy_stderr.decode('utf-8', errors='replace')}")
+                    raise RuntimeError(f"Failed to copy test report: {copy_stderr.decode('utf-8', errors='replace')}")
+                
+                # Process the JSON report
+                await self._process_json_report(test_run, local_report_path)
+                
+            except Exception as e:
+                await custom_logger.aerror(f"Error copying or processing test report: {str(e)}")
+                test_run.status = TestStatus.ERROR
+                test_run.end_time = end_time
+                test_run.duration_seconds = duration
+                self._save_test_run_metadata(test_run)
+                
+                await self.log_service.create_log(
+                    LogCreate(
+                        project_id=project_id,
+                        service_id=service_id,
+                        test_id=test_run.id,
+                        message=f"Error copying or processing test report: {str(e)}",
+                        severity=Severity.ERROR,
+                        source="test_service"
+                    )
+                )
+                return test_run
+            
+            # Update the test run with success status
+            test_run.status = TestStatus.COMPLETED
+            test_run.end_time = end_time
+            test_run.duration_seconds = duration
+            self._save_test_run_metadata(test_run)
+            
+            await custom_logger.ainfo(f"Test run completed: {test_run.id}")
+            return test_run
+            
+        except Exception as e:
+            error_message = str(e)
+            await custom_logger.aerror(f"Error during test run: {error_message}")
+            
+            # Update test run with error status
+            test_run.status = TestStatus.ERROR
+            test_run.end_time = datetime.now()
+            if test_run.start_time:
+                test_run.duration_seconds = (test_run.end_time - test_run.start_time).total_seconds()
+            self._save_test_run_metadata(test_run)
+            
+            # Log the error
+            error_log = await self.log_service.create_log(
+                LogCreate(
+                    project_id=project_id,
+                    service_id=service_id,
+                    test_id=test_run.id,
+                    message=f"Error during test run: {error_message}",
+                    severity=Severity.ERROR,
+                    source="test_service"
+                )
+            )
+            
+            test_run.log_ids.append(error_log.id)
+            self._save_test_run_metadata(test_run)
+            
+            return test_run

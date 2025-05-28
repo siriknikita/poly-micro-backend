@@ -7,6 +7,8 @@ from app.services.test_analyzer_service import TestAnalyzerService
 from app.services.log_service import LogService
 from app.api.dependencies import get_log_service
 from app.schemas.test import TestRunCreate, TestRunResult, TestAnalysisRequest, TestAnalysisResult
+from app.services.service_manager import ServiceManager
+from app.api.dependencies import get_service_manager
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -24,6 +26,12 @@ def get_test_analyzer_service(
 ):
     """Dependency for injecting TestAnalyzerService"""
     return TestAnalyzerService(log_service, test_service)
+
+def get_service_manager_with_deps(
+    log_service: LogService = Depends(get_log_service)
+):
+    """Dependency for injecting ServiceManager with dependencies"""
+    return ServiceManager(log_service)
 
 
 @router.post("/run", response_model=TestRunResult, status_code=status.HTTP_202_ACCEPTED)
@@ -216,4 +224,62 @@ async def get_test_analysis(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve test analysis: {str(e)}"
+        )
+
+
+@router.post("/service/{service_id}/run-all", response_model=TestRunResult, status_code=status.HTTP_202_ACCEPTED)
+async def run_service_tests(
+    service_id: str = Path(..., description="The ID of the service to run tests for"),
+    project_id: str = Query(..., description="The project ID that the service belongs to"),
+    test_service: TestService = Depends(get_test_service),
+    service_manager: ServiceManager = Depends(get_service_manager_with_deps)
+):
+    """
+    Run all tests for a specific microservice in its Docker container.
+    
+    This endpoint:
+    1. Gets the Docker container name from the service
+    2. Creates a new test run for the service
+    3. Executes all tests in the container using pytest with JSON reporting
+    4. Processes the results and generates logs for each test
+    5. Returns the test run result with execution details
+    
+    The test results are also available through the logs with pass/fail status indicators.
+    """
+    try:
+        logger.info(f"Running all tests for service {service_id} in project {project_id}")
+        
+        # Get the service details to get the container name
+        service = await service_manager.get_service(project_id, service_id)
+        if not service:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Service with ID {service_id} not found in project {project_id}"
+            )
+        
+        # Get the container name from the service
+        container_name = service.container_name
+        if not container_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Service {service_id} does not have a valid container name"
+            )
+        
+        # Run all tests for the service
+        test_result = await test_service.run_service_tests(
+            project_id=project_id,
+            service_id=service_id,
+            service_name=service.name,
+            container_name=container_name
+        )
+        
+        return test_result
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error running service tests: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to run service tests: {str(e)}"
         )

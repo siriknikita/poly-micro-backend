@@ -17,6 +17,7 @@ class ServiceTestItem(BaseModel):
     url: Optional[str] = None
     health: Optional[str] = None
     uptime: Optional[str] = None
+    container_name: Optional[str] = None  # Docker container name
     
     model_config = {
         "from_attributes": True,
