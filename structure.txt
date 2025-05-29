@@ -1,0 +1,68 @@
+.
+├── app
+│   ├── api
+│   │   ├── endpoints/
+│   │   ├── routes/
+│   │   └── dependencies.py
+│   ├── core
+│   │   ├── auth.py
+│   │   ├── cache.py
+│   │   ├── config.py
+│   │   ├── enum_compat.py
+│   │   ├── jwt_generator.py
+│   │   └── sample_data.py
+│   ├── db
+│   │   ├── migrations/
+│   │   ├── repositories/
+│   │   ├── database.py
+│   │   └── __init__.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── log.py
+│   │   └── user.py
+│   ├── schemas
+│   │   ├── analysis.py
+│   │   ├── __init__.py
+│   │   ├── log.py
+│   │   ├── metrics.py
+│   │   ├── project.py
+│   │   ├── service.py
+│   │   └── Інші моделі...
+│   ├── services
+│   │   ├── __init__.py
+│   │   ├── auth_service.py
+│   │   ├── log_service.py
+│   │   ├── metrics_service.py
+│   │   ├── project_service.py
+│   │   └── Інші сервіси...
+│   ├── utils
+│   │   ├── __init__.py
+│   │   └── logger.py
+│   ├── __init__.py
+│   └── main.py
+├── docs/
+├── tests/
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── test_log_repository.py
+│   │   ├── test_logs.py
+│   │   ├── test_metrics.py
+│   │   ├── test_projects.py
+│   │   └── test_services.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── test_log_entry.py
+│   ├── conftest.py
+│   └── __init__.py
+├── development-planning.md
+├── docker-compose.yml
+├── Dockerfile
+├── entrypoint.sh
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── run_app.sh
+├── run_logging_demo.py
+├── run.py
+├── run_tests.sh
+└── setup_demo.py
